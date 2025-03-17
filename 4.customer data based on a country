@@ -1,0 +1,65 @@
+
+Requirement: object-oriented approach to retrieving and displaying customer data based on a specified country (land1).
+
+*&-------------------------------------------------------------------
+*& Report YAK_OOP_METHOD1
+*&-------------------------------------------------------------------
+REPORT yak_oop_method1.
+
+CLASS lcl_customers DEFINITION.
+
+
+  PUBLIC SECTION.
+
+    METHODS get_customer IMPORTING land1 TYPE land1.
+
+  PROTECTED SECTION.
+
+    TYPES: BEGIN OF ty_cust,
+             kunnr TYPE kna1-kunnr,
+             land1 TYPE land1,
+             name1 TYPE name1,
+             ort01 TYPE ort01,
+           END OF ty_cust.
+
+    DATA: it_cust TYPE STANDARD TABLE OF ty_cust,
+          wa_cust TYPE ty_cust.
+
+
+    METHODS display.
+ENDCLASS.
+
+
+CLASS lcl_customers IMPLEMENTATION.
+  
+  METHOD get_customer.
+    SELECT kunnr, land1, name1, ort01
+      FROM kna1
+      INTO TABLE @it_cust
+      WHERE land1 = @land1.
+
+    IF sy-subrc EQ 0.
+      CALL METHOD me->display.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD display.
+    LOOP AT it_cust INTO wa_cust.
+      WRITE:/ wa_cust-kunnr,
+             wa_cust-land1,
+             wa_cust-name1,
+             wa_cust-ort01.
+    ENDLOOP.
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+
+  PARAMETERS p_land1 TYPE kna1-land1.
+
+  DATA: ob TYPE REF TO lcl_customers.
+  CREATE OBJECT ob.
+
+  CALL METHOD ob->get_customer
+    EXPORTING
+      land1 = p_land1.
