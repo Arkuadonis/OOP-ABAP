@@ -1,0 +1,56 @@
+
+Below code demonstrates the concept of calling a method within another method 
+in ABAP Object-Oriented Programming (OOP) and how a public method can 
+access protected attributes and protected methods.The ME keyword represents the
+current calling object.
+
+*&-------------------------------------------------------------------
+*& Report YAK_OOP_METHOD
+*&-------------------------------------------------------------------
+REPORT yak_oop_method.
+
+CLASS lcl_demo_method DEFINITION.
+
+  PUBLIC SECTION.
+    METHODS set IMPORTING empid   TYPE i
+                          empname TYPE c OPTIONAL.
+
+  PROTECTED SECTION.
+    DATA: lv_empid       TYPE i,
+          lv_empname(20) TYPE c.
+    METHODS: display.
+
+ENDCLASS.
+
+CLASS lcl_demo_method IMPLEMENTATION.
+
+  METHOD set.
+    lv_empid = empid.    " Assigning parameter to protected attribute
+    lv_empname = empname." Assigning parameter to protected attribute
+
+    CALL METHOD me->display. " Calling the protected method 'display'
+  ENDMETHOD.
+
+  METHOD display.
+    WRITE: / 'Employee ID:', lv_empid,
+           / 'Employee Name:', lv_empname. 
+  ENDMETHOD.
+
+ENDCLASS.
+
+START-OF-SELECTION.
+
+  DATA: obj TYPE REF TO lcl_demo_method.
+  CREATE OBJECT obj. " Creating object of lcl_demo_method
+
+
+  CALL METHOD obj->set  " Calling 'set' method with employee details
+    EXPORTING
+      empid   = 100456
+      empname = 'SAP DEV'.
+
+
+
+Output of the Program:
+Employee ID: 100456
+Employee Name: SAP DEV
