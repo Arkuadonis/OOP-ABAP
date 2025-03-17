@@ -1,0 +1,22 @@
+REPORT yak_global_class_pgm.
+
+INITIALIZATION.
+
+PARAMETERs p_cust TYPE kna1-kunnr.
+
+DATA: lv_name1 TYPE kna1-name1,
+      lv_ort01 TYPE kna1-ort01.
+
+START-OF-SELECTION.
+
+DATA: obj TYPE REF TO yak_global.
+CREATE OBJECT obj.
+
+CALL METHOD obj->m1
+  EXPORTING
+    kunnr = p_cust
+  IMPORTING
+    name1 = lv_name1
+    ort01 = lv_ort01.
+
+WRITE: lv_name1, lv_ort01.
