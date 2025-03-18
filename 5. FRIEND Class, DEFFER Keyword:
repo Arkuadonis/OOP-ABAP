@@ -1,0 +1,70 @@
+4. FRIEND Class, DEFFER Keyword:
+
+In general, the protected and private components of a class cannot be accessed outside the class. However, in certain cases, there may be a business requirement to access these components. 
+This can be achieved using the FRIEND class feature in Object-Oriented Programming (OOP), which allows specific classes to access all components of another class, regardless of their visibility section (protected or private).
+The DEFFER keyword is used to inform the system that the class is declared later in the program, rather than at the beginning.
+
+ Example:
+
+*&-------------------------------------------------------------------
+*& Report YAK_OOP_FRIEND
+*&-------------------------------------------------------------------
+REPORT yak_oop_friend.
+
+" Declare class lcl_friend later in the program using DEFERRED
+CLASS lcl_friend DEFINITION DEFERRED.
+
+" Declare class lcl_class and specify that lcl_friend is a FRIEND class
+CLASS lcl_class DEFINITION FRIENDS lcl_friend.
+  PUBLIC SECTION.
+    METHODS m1.  " Public method
+  PROTECTED SECTION.
+    METHODS m2.  " Protected method
+  PRIVATE SECTION.
+    METHODS m3.  " Private method
+ENDCLASS.
+
+" Implement methods of class lcl_class
+CLASS lcl_class IMPLEMENTATION.
+  METHOD m1.
+    WRITE:/ 'Public Section Method m1'.
+  ENDMETHOD.
+  METHOD m2.
+    WRITE:/ 'Protected Section Method m2'.
+  ENDMETHOD.
+  METHOD m3.
+    WRITE:/ 'Private section method m3'.
+  ENDMETHOD.
+ENDCLASS.
+
+" Define class lcl_friend and implement its method
+CLASS lcl_friend DEFINITION.
+  PUBLIC SECTION.
+    METHODS mf.  " Friend class method
+ENDCLASS.
+
+CLASS lcl_friend IMPLEMENTATION.
+  METHOD mf.
+    WRITE:/ 'Friend class method'.
+
+    " Create an instance of lcl_class
+    DATA: lcl_obj TYPE REF TO lcl_class.
+    CREATE OBJECT lcl_obj.
+
+    " Call methods of lcl_class
+    CALL METHOD lcl_obj->m1. " Public method
+    CALL METHOD lcl_obj->m2. " Protected method (accessible due to FRIEND relationship)
+    CALL METHOD lcl_obj->m3. " Private method (accessible due to FRIEND relationship)
+  ENDMETHOD.
+ENDCLASS.
+
+" Main program execution
+START-OF-SELECTION.
+
+  " Create an instance of the friend class lcl_friend
+  DATA: f_obj TYPE REF TO lcl_friend.
+  CREATE OBJECT f_obj.
+
+  " Call the method of the friend class
+  CALL METHOD f_obj->mf.
+
