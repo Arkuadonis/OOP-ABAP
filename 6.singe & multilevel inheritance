@@ -1,0 +1,84 @@
+
+The provided program demonstrates single inheritance and multilevel inheritance using ABAP classes.
+Single Inheritance: In the example, the lcl_cycle class inherits from the lcl_vehicle class. This is an example of single inheritance, 
+Multilevel Inheritance:The lcl_car class is an example of multilevel inheritance, where lcl_car inherits from lcl_cycle, and lcl_cycle itself inherits from lcl_vehicle. This creates a chain of inheritance, where lcl_car indirectly inherits from lcl_vehicle through lcl_cycle.
+Key Components:
+lcl_vehicle: This is the base class (parent class) with properties like wheels and color, and a method display.
+lcl_cycle: This is a subclass of lcl_vehicle and adds additional functionality, like setcycle and the break property.
+lcl_car: This is a subclass of lcl_cycle and overrides the display method while adding additional functionality, such as the gears property.
+
+*&-------------------------------------------------------------------
+*& Report YAK_OOP_INHERITANCE
+*&-------------------------------------------------------------------
+
+REPORT yak_oop_inheritance.
+
+" Base class for vehicles
+CLASS lcl_vehicle DEFINITION.
+  PUBLIC SECTION.
+    METHODS display.
+  PROTECTED SECTION.
+    DATA: wheels    TYPE i,
+          color(10) TYPE c. " Parameters
+ENDCLASS.
+
+CLASS lcl_vehicle IMPLEMENTATION.
+  METHOD display.
+    WRITE: wheels, color. " Display wheels and color of the vehicle
+  ENDMETHOD.
+ENDCLASS.
+
+" Derived class for cycles inheriting from lcl_vehicle
+CLASS lcl_cycle DEFINITION INHERITING FROM lcl_vehicle.
+  PUBLIC SECTION.
+    METHODS setcycle.
+  PROTECTED SECTION.
+    DATA: break TYPE i. " Property for break count in cycles
+ENDCLASS.
+
+CLASS lcl_cycle IMPLEMENTATION.
+
+  METHOD setcycle.
+    wheels = 2. " Cycles have 2 wheels
+    color = 'RED'. " Cycles are RED by default
+    break = 2. " Cycles have 2 breaks
+  ENDMETHOD.
+ENDCLASS.
+
+" Derived class for cars inheriting from lcl_cycle
+CLASS lcl_car DEFINITION INHERITING FROM lcl_cycle.
+  PUBLIC SECTION.
+    METHODS setcar.
+    METHODS display REDEFINITION. " Method override to change the display output
+  PROTECTED SECTION.
+    DATA: gears TYPE i. " Property for gears in the car
+ENDCLASS.
+
+CLASS lcl_car IMPLEMENTATION.
+  METHOD setcar.
+    wheels = 4. " Cars have 4 wheels
+    color = 'SILVER'. " Cars are SILVER by default
+    break = 1. " Cars have 1 break (for simplicity in this example)
+    gears = 5. " Cars have 5 gears
+  ENDMETHOD.
+
+  METHOD display.
+
+    CALL METHOD super->display. "Calling Parent class Implementation
+
+    WRITE: / break, gears. " Override display to include gears information
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+  " Create an object for lcl_cycle and call methods
+  DATA: ob TYPE REF TO lcl_cycle.
+  CREATE OBJECT ob.
+  CALL METHOD ob->setcycle.
+  CALL METHOD ob->display.
+
+  " Create an object for lcl_car and call methods
+  DATA: ob_car TYPE REF TO lcl_car.
+  CREATE OBJECT ob_car.
+  CALL METHOD ob_car->setcar.
+  CALL METHOD ob_car->display.
