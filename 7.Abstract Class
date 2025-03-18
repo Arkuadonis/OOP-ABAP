@@ -1,0 +1,118 @@
+8. Abstract Class in ABAP
+
+Example:
+*&-------------------------------------------------------------------
+*& Report YAK_OOP_ABSTRACT
+*&-------------------------------------------------------------------
+REPORT yak_oop_abstract.
+
+CLASS lcl_restaurant DEFINITION ABSTRACT.
+  PUBLIC SECTION.
+    METHODS : store,
+             display,
+             payment ABSTRACT.
+  PROTECTED SECTION.
+    DATA : tableno TYPE i,
+           steward TYPE string.
+ENDCLASS.
+
+CLASS lcl_restaurant IMPLEMENTATION.
+
+  METHOD store.
+    tableno = 3.
+    steward = 'ABC'.
+  ENDMETHOD.
+
+  METHOD display.
+    WRITE :/ tableno, steward.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lcl_cheque DEFINITION INHERITING FROM lcl_restaurant.
+  PUBLIC SECTION.
+    METHODS payment REDEFINITION.
+    METHODS m1.
+  PROTECTED SECTION.
+    DATA : cqno TYPE i,
+           cqdate TYPE d,
+           cqamt TYPE i.
+ENDCLASS.
+
+CLASS lcl_cheque IMPLEMENTATION.
+
+  METHOD payment.
+    cqno = 123.
+    cqdate = sy-datum.
+    cqamt = 455.
+    WRITE :/ 'Details of Cheque:', cqno, cqdate, cqamt.
+  ENDMETHOD.
+
+  METHOD m1.
+    WRITE :/ 'Inside direct method m1 of cheque class...'.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lcl_creditcard DEFINITION INHERITING FROM lcl_restaurant.
+  PUBLIC SECTION.
+    METHODS payment REDEFINITION.
+  PROTECTED SECTION.
+    DATA : ccno TYPE i,
+           ccexpdate TYPE d,
+           ccamt TYPE i.
+ENDCLASS.
+
+CLASS lcl_creditcard IMPLEMENTATION.
+
+  METHOD payment.
+    ccno = 455.
+    ccexpdate = sy-datum.
+    ccamt = 234.
+    WRITE :/ 'Credit card details:', ccno, ccexpdate, ccamt.
+  ENDMETHOD.
+
+ENDCLASS.
+
+START-OF-SELECTION.
+  DATA r TYPE REF TO lcl_restaurant.
+* Create object r. "syntax error
+
+  DATA cq TYPE REF TO lcl_cheque.
+  CREATE OBJECT cq.
+
+  FORMAT COLOR 3.
+  WRITE :/ 'Using Cheque class object....'.
+  CALL METHOD : cq->store,
+                cq->display,
+                cq->payment,
+                cq->m1.
+
+  r = cq. "Narrow casting
+  FORMAT COLOR 7.
+  WRITE :/ 'Cheque class object assigned to restaurant....'.
+  CALL METHOD : r->store,
+                r->display,
+                r->payment.
+* r->m1. "syntax error
+
+  " Dynamic method call to access m1 method of the subclass
+  CALL METHOD r->('M1').
+
+  ULINE.
+  FORMAT COLOR 1.
+  WRITE :/ 'CREDIT CARD Object....'.
+  DATA cc TYPE REF TO lcl_creditcard.
+  CREATE OBJECT cc.
+
+  CALL METHOD : cc->store,
+                cc->display,
+                cc->payment.
+
+  r = cc. "Narrow casting
+  FORMAT COLOR 2.
+  WRITE :/ 'Credit card class object assigned to restaurant....'.
+  CALL METHOD : r->store,
+                r->display,
+                r->payment.
+
