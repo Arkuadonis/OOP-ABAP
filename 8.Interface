@@ -1,0 +1,82 @@
+
+Key Concepts:
+Interfaces: if_rectangle and if_square are interfaces that define common methods (area and perimeter) and constants (such as length, breadth, and side).
+Multiple Inheritance: The class lcl_if implements both interfaces if_rectangle and if_square.
+Narrow Casting: An object of class lcl_if is cast into references of the interfaces if_rectangle and if_square to demonstrate how the methods of the interfaces can be called from the interface references.
+
+*&-------------------------------------------------------------------
+*& Report YAK_OOP_INTERFACE
+*&-------------------------------------------------------------------
+REPORT yak_oop_interface.
+
+INTERFACE if_rectangle.
+  " In Interface By Default, all components are public
+  CONSTANTS: length  TYPE i VALUE 10,
+             breadth TYPE i VALUE 5.
+  METHODS: area,
+    perimeter.
+ENDINTERFACE.
+
+INTERFACE if_square.
+  CONSTANTS: side TYPE i VALUE 10.
+  METHODS: area,
+    perimeter.
+ENDINTERFACE.
+
+CLASS lcl_if DEFINITION.
+  PUBLIC SECTION.
+    INTERFACES: if_rectangle,
+      if_square.
+  PROTECTED SECTION.
+    DATA: res TYPE i.
+ENDCLASS.
+
+CLASS lcl_if IMPLEMENTATION.
+
+  METHOD if_rectangle~area.
+    WRITE: / 'This is from the interface rectangle - area method'.
+  ENDMETHOD.
+
+  METHOD if_rectangle~perimeter.
+    WRITE: / 'This is from the interface rectangle - perimeter method'.
+  ENDMETHOD.
+
+  METHOD if_square~area.
+    WRITE: / 'This is from the interface square - area method'.
+  ENDMETHOD.
+
+  METHOD if_square~perimeter.
+    WRITE: / 'This is from the interface square - perimeter method'.
+  ENDMETHOD.
+
+ENDCLASS.
+
+START-OF-SELECTION.
+
+  DATA: ob TYPE REF TO lcl_if.
+  CREATE OBJECT ob.
+
+  NEW-LINE.
+  WRITE: / 'From class object'.
+  CALL METHOD: ob->if_rectangle~area,
+               ob->if_rectangle~perimeter,
+               ob->if_square~area,
+               ob->if_square~perimeter.
+
+  DATA: if_ref_rec TYPE REF TO if_rectangle.
+  DATA: if_ref_sq TYPE REF TO if_square.
+
+  " Narrow Casting: Assigning object reference to interface reference
+  if_ref_rec = ob.  " Narrow Casting for if_rectangle
+
+  NEW-LINE.
+  WRITE: / 'From interface rectangle reference'.
+  CALL METHOD: if_ref_rec->area,
+               if_ref_rec->perimeter.
+
+  if_ref_sq = ob.  " Narrow Casting for if_square
+
+  NEW-LINE.
+  WRITE: / 'From interface square reference'.
+  CALL METHOD: if_ref_sq->area,
+               if_ref_sq->perimeter.
