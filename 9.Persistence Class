@@ -1,0 +1,122 @@
+In SAP ABAP, the Persistence Service is used to store the current state of an object permanently in the database. 
+By default, an object's lifetime is limited to the duration of a program’s execution. Once the program ends, the memory allocated to the object is cleared by the garbage collector. However, with Persistence Service, objects can be made permanent, allowing data to be stored and retrieved from the database.
+Persistence service enables CRUD (Create, Read, Update, Delete) operations on database tables
+Persistence service implemented using Persistence Classes in ABAP.
+
+
+*&-----------------------------------------------------------------
+*& Report YAK_OOP_PERSISTANCE_DRIVER_PGM
+*&-----------------------------------------------------------------
+REPORT yak_oop_persistance_driver_pgm.
+
+* Selection Screen Block 1 - Input fields for Employee Data
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME.
+PARAMETERS:
+  p_eid    TYPE zak_emp-zak_empid,      " Employee ID
+  p_ename  TYPE zak_emp-zak_empname,    " Employee Name
+  p_edesig TYPE zak_emp-zak_empdesig.   " Employee Designation
+SELECTION-SCREEN END OF BLOCK b1.
+
+* Selection Screen Block 2 - Radio buttons for CRUD operations
+SELECTION-SCREEN BEGIN OF BLOCK b2 WITH FRAME.
+PARAMETERS:
+  p_r1 RADIOBUTTON GROUP gp1 USER-COMMAND fc1,  " Create Record
+  p_r2 RADIOBUTTON GROUP gp1 DEFAULT 'X',      " Read Record
+  p_r3 RADIOBUTTON GROUP gp1,                  " Update Record
+  p_r4 RADIOBUTTON GROUP gp1.                  " Delete Record
+SELECTION-SCREEN END OF BLOCK b2.
+
+* Declare object references for Persistence and Actor classes
+DATA: obj_actor TYPE REF TO zca_zak_persistance,
+      obj_pers  TYPE REF TO zcl_zak_persistance.
+
+* Initialization block - Assign agent class reference
+INITIALIZATION.
+  obj_actor = zca_zak_persistance=>agent.
+
+* Event: Trigger actions based on radio button selection
+AT SELECTION-SCREEN ON RADIOBUTTON GROUP gp1.
+  CASE sy-ucomm.
+    WHEN 'FC1'.
+      IF p_r1 = 'X'.
+        PERFORM create_record.  " Call Create Record Subroutine
+      ELSEIF p_r2 = 'X'.
+        PERFORM read_record.    " Call Read Record Subroutine
+      ELSEIF p_r3 = 'X'.
+        PERFORM update_record.  " Call Update Record Subroutine
+      ELSEIF p_r4 = 'X'.
+        PERFORM delete_record.  " Call Delete Record Subroutine
+      ENDIF.
+  ENDCASE.
+
+*&-----------------------------------------------------------------
+*& Form GET_PERSISTENT_OBJECT - Fetch persistent object (Refactored)
+*&-----------------------------------------------------------------
+FORM get_persistent_object USING p_empid TYPE zakempid  CHANGING p_obj TYPE REF TO zcl_zak_persistance.
+  TRY.
+      p_obj = obj_actor->get_persistent( p_empid ).
+    CATCH cx_os_object_not_found.
+*      p_obj = NULL.
+  ENDTRY.
+ENDFORM.
+
+*&-----------------------------------------------------------------
+*& Form CREATE_RECORD - Creates a new Employee Record
+*&-----------------------------------------------------------------
+FORM create_record.
+  obj_pers = obj_actor->create_persistent( p_eid ).
+
+  IF obj_pers IS BOUND.
+    obj_pers->set_zak_empname( p_ename ).
+    obj_pers->set_zak_empdesig( p_edesig ).
+    COMMIT WORK.
+    MESSAGE 'Record Created Successfully' TYPE 'I'.
+  ELSE.
+    MESSAGE 'Failed to Create Record' TYPE 'E'.
+  ENDIF.
+ENDFORM.
+
+*&-----------------------------------------------------------------
+*& Form READ_RECORD - Reads an Employee Record
+*&-----------------------------------------------------------------
+FORM read_record.
+  PERFORM get_persistent_object USING p_eid CHANGING obj_pers.
+
+  IF obj_pers IS BOUND.
+    MESSAGE |Employee ID: { obj_pers->get_zak_empid( ) } Name       : { obj_pers->get_zak_empname( ) } Designation: { obj_pers->get_zak_empdesig( ) }| TYPE 'I'.
+  ELSE.
+    MESSAGE 'Employee record not found' TYPE 'E'.
+  ENDIF.
+ENDFORM.
+
+*&-----------------------------------------------------------------
+*& Form UPDATE_RECORD - Updates an Employee Record
+*&-----------------------------------------------------------------
+FORM update_record.
+  PERFORM get_persistent_object USING p_eid CHANGING obj_pers.
+
+  IF obj_pers IS BOUND.
+    obj_pers->set_zak_empname( p_ename ).
+    obj_pers->set_zak_empdesig( p_edesig ).
+    COMMIT WORK.
+    MESSAGE 'Record Updated Successfully' TYPE 'I'.
+  ELSE.
+    MESSAGE 'Record Not Found' TYPE 'E'.
+  ENDIF.
+ENDFORM.
+
+*&-----------------------------------------------------------------
+*& Form DELETE_RECORD - Deletes an Employee Record
+*&-----------------------------------------------------------------
+FORM delete_record.
+  PERFORM get_persistent_object USING p_eid CHANGING obj_pers.
+
+  IF obj_pers IS BOUND.
+    obj_actor->delete_persistent( p_eid ).
+    COMMIT WORK.
+    MESSAGE 'Record Deleted Successfully' TYPE 'I'.
+  ELSE.
+    MESSAGE 'Record Not Found' TYPE 'E'.
+  ENDIF.
+ENDFORM.
+
